@@ -16,7 +16,6 @@
 
 package org.gradle.model.internal.core;
 
-import com.google.common.collect.ImmutableList;
 import org.gradle.model.internal.registry.ModelRegistry;
 
 import java.util.List;
@@ -24,22 +23,28 @@ import java.util.List;
 public class ExtractedModelAction implements ExtractedModelRule {
 
     private final ModelActionRole role;
+    private final boolean transitive;
     private final ModelAction action;
     private final List<? extends Class<?>> dependencies;
 
-    public ExtractedModelAction(ModelActionRole role, ModelAction action) {
-        this(role, ImmutableList.<Class<?>>of(), action);
+    public ExtractedModelAction(ModelActionRole role, List<? extends Class<?>> dependencies, ModelAction action) {
+        this(role, false, dependencies, action);
     }
 
-    public ExtractedModelAction(ModelActionRole role, List<? extends Class<?>> dependencies, ModelAction action) {
+    public ExtractedModelAction(ModelActionRole role, boolean transitive, List<? extends Class<?>> dependencies, ModelAction action) {
         this.role = role;
+        this.transitive = transitive;
         this.action = action;
         this.dependencies = dependencies;
     }
 
     @Override
     public void apply(ModelRegistry modelRegistry, ModelPath scope) {
-        modelRegistry.configure(role, action, scope);
+        if (transitive) {
+            modelRegistry.applyToAllLinksTransitive(scope, role, action, ModelPath.ROOT);
+        } else {
+            modelRegistry.configure(role, action, scope);
+        }
     }
 
     @Override

@@ -109,6 +109,31 @@ public class DefaultModelRegistry implements ModelRegistryInternal {
         return this;
     }
 
+    @Override
+    public ModelRegistry applyToAllLinksTransitive(final ModelPath parent, final ModelActionRole role, final ModelAction action, final ModelPath scope) {
+        if (action.getSubject().getPath() != null) {
+            throw new IllegalArgumentException("Linked element action reference must have null path.");
+        }
+        registerListener(new ModelListener() {
+            @Override
+            public ModelPath getAncestor() {
+                return parent;
+            }
+
+            @Override
+            public ModelType<?> getType() {
+                return action.getSubject().getType();
+            }
+
+            @Override
+            public boolean onDiscovered(ModelNodeInternal node) {
+                bind(ModelReference.of(node.getPath(), action.getSubject().getType()), role, action, scope);
+                return false;
+            }
+        });
+        return this;
+    }
+
     static void checkNodePath(ModelNodeInternal node, ModelAction action) {
         if (!node.getPath().equals(action.getSubject().getPath())) {
             throw new IllegalArgumentException(String.format("Element action reference has path (%s) which does not reference this node (%s).", action.getSubject().getPath(), node.getPath()));

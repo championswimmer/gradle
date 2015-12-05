@@ -279,27 +279,7 @@ class ModelElementNode extends ModelNodeInternal {
 
     @Override
     public void applyToAllLinksTransitive(final ModelActionRole type, final ModelAction action) {
-        if (action.getSubject().getPath() != null) {
-            throw new IllegalArgumentException("Linked element action reference must have null path.");
-        }
-
-        modelRegistry.registerListener(new ModelListener() {
-            @Override
-            public ModelPath getAncestor() {
-                return ModelElementNode.this.getPath();
-            }
-
-            @Override
-            public ModelType<?> getType() {
-                return action.getSubject().getType();
-            }
-
-            @Override
-            public boolean onDiscovered(ModelNodeInternal node) {
-                modelRegistry.bind(ModelReference.of(node.getPath(), action.getSubject().getType()), type, action, ModelPath.ROOT);
-                return false;
-            }
-        });
+        modelRegistry.applyToAllLinksTransitive(getPath(), type, action, ModelPath.ROOT);
     }
 
     @Override

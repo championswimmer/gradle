@@ -109,6 +109,8 @@ public interface ModelRegistry {
 
     ModelRegistry apply(Class<? extends RuleSource> rules);
 
+    ModelRegistry applyToAllLinksTransitive(ModelPath parent, ModelActionRole role, ModelAction action, ModelPath scope);
+
     MutableModelNode getRoot();
 
     @Nullable

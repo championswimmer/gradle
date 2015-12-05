@@ -18,18 +18,21 @@ package org.gradle.model.internal.inspect;
 
 import net.jcip.annotations.ThreadSafe;
 import org.gradle.model.InvalidModelRuleDeclarationException;
-import org.gradle.model.internal.core.ModelActionRole;
+import org.gradle.model.Transitive;
 import org.gradle.model.internal.core.ExtractedModelAction;
 import org.gradle.model.internal.core.ExtractedModelRule;
+import org.gradle.model.internal.core.ModelActionRole;
 
 import java.lang.annotation.Annotation;
+import java.util.Collections;
 
 @ThreadSafe
 public abstract class AbstractMutationModelRuleExtractor<T extends Annotation> extends AbstractAnnotationDrivenModelRuleExtractor<T> {
 
     public <R, S> ExtractedModelRule registration(MethodRuleDefinition<R, S> ruleDefinition) {
         validate(ruleDefinition);
-        return new ExtractedModelAction(getMutationType(), new MethodBackedModelAction<S>(ruleDefinition));
+        boolean transitive = ruleDefinition.isAnnotationPresent(Transitive.class);
+        return new ExtractedModelAction(getMutationType(), transitive, Collections.<Class<?>>emptyList(), new MethodBackedModelAction<S>(ruleDefinition));
     }
 
     protected abstract ModelActionRole getMutationType();
@@ -39,5 +42,4 @@ public abstract class AbstractMutationModelRuleExtractor<T extends Annotation> e
             throw new InvalidModelRuleDeclarationException(ruleDefinition.getDescriptor(), "only void can be used as return type for mutation rules");
         }
     }
-
 }
